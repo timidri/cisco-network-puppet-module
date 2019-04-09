@@ -25,6 +25,7 @@ module Puppet::Util::NetworkDevice::Cisco_nexus # rubocop:disable Style/ClassAnd
 
     def parse_device_facts
       require 'facter/cisco_nexus'
+      require 'facter/custom_facts'
       facts = {}
 
       facts['operatingsystem'] = 'nexus'
@@ -34,6 +35,8 @@ module Puppet::Util::NetworkDevice::Cisco_nexus # rubocop:disable Style/ClassAnd
 
       facts['hostname'] = Cisco::NodeUtil.node.host_name
       facts['operatingsystemrelease'] = facts['cisco']['images']['full_version']
+
+      Facter::CiscoNexus::CustomFacts.add_custom_facts(facts)
 
       facts
     end
