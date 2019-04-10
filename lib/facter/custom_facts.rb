@@ -18,7 +18,7 @@ class Facter::CiscoNexus::CustomFacts
             state[prop] = nu_obj.send(prop)
           end
 
-          interfaces << { interface_name: state }
+          interfaces[interface_name] = state
         end
     end
     facts['interfaces'] = interfaces
