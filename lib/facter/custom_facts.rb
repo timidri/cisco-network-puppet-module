@@ -1,7 +1,7 @@
 require 'cisco_node_utils'
 
 class Facter::CiscoNexus::CustomFacts
-  PROPS = [:mtu, :speed, :duplex]
+  PROPS = [:mtu, :speed, :duplex, :encapsulation_dot1q, :description, :ipv4_address]
 
   def self.add_custom_facts(facts)
     # facts['my_custom_fact'] = 'my_custom_value'
