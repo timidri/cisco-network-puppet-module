@@ -29,7 +29,7 @@ class Facter::CiscoNexus::CustomFacts
         state = {}
         # Call node_utils getter for each property
         HSRP_PROPS.each do |prop|
-          state[prop] = nu_obj.send(prop)
+          state[prop] = nu_obj[prop]
         end
 
         hsrp_groups[group_name] = state
