@@ -50,6 +50,8 @@ class Facter::CiscoNexus::CustomFacts
       group_name = row_data['sh_if_index']
       vrrp_fact[group_name] = {}
       row_data.each do |key, value|
+        next if key == 'sh_if_index' # we don't need the name in the properties
+        key['sh_'] = '' # remove the 'sh_' prefix
         vrrp_fact[group_name][key] = value
       end
     end
