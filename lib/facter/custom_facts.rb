@@ -52,6 +52,7 @@ class Facter::CiscoNexus::CustomFacts
       row_data.each do |key, value|
         vrrp_fact[group_name][key] = value
       end
+    end
     # set the facts
     facts['interfaces'] = interfaces
     facts['hsrp'] = hsrp_groups
