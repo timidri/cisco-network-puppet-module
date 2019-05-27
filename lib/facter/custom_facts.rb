@@ -41,9 +41,20 @@ class Facter::CiscoNexus::CustomFacts
 
     # vrrp info
     client = Cisco::Client.create()
-    puts client.get(command: 'show vrrp', data_format: :nxapi_structured)
+    vrrp_data = client.get(command: 'show vrrp', data_format: :nxapi_structured)
+    puts vrrp_data
+    vrrp_fact = {}
+    vrrp_table = vrrp_data['TABLE_vrrp_group']
+    vrrp_table.each do |row|
+      row_data = row['ROW_vrrp_group']
+      group_name = row_data['sh_if_index']
+      vrrp_fact[group_name] = {}
+      row_data.each do |key, value|
+        vrrp_fact[group_name][key] = value
+      end
     # set the facts
     facts['interfaces'] = interfaces
     facts['hsrp'] = hsrp_groups
+    facts['vrrp'] = vrrp_fact
   end
 end
