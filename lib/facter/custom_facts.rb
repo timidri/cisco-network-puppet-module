@@ -42,11 +42,10 @@ class Facter::CiscoNexus::CustomFacts
     # vrrp info
     client = Cisco::Client.create()
     vrrp_data = client.get(command: 'show vrrp', data_format: :nxapi_structured)
-    puts vrrp_data
     vrrp_fact = {}
     vrrp_table = vrrp_data['TABLE_vrrp_group']
     if vrrp_table.respond_to?(:to_hash) # it's a Hash, not an Array
-      vrrp_table=[vrrp_table] # we convert to array to simplify code
+      vrrp_table=[vrrp_table] # we convert to Array to simplify code
     end
     vrrp_table.each do |row|
       row_data = row['ROW_vrrp_group']
@@ -61,6 +60,5 @@ class Facter::CiscoNexus::CustomFacts
     facts['interfaces'] = interfaces
     facts['hsrp'] = hsrp_groups
     facts['vrrp'] = vrrp_fact
-    puts facts['vrrp']
   end
 end
