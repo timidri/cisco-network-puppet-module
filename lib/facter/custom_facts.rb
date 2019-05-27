@@ -45,6 +45,9 @@ class Facter::CiscoNexus::CustomFacts
     puts vrrp_data
     vrrp_fact = {}
     vrrp_table = vrrp_data['TABLE_vrrp_group']
+    if vrrp_table.responds_to?(:to_hash) # it's a Hash, not an Array
+      vrrp_table=[vrrp_table] # we convert to array to simplify code
+    end
     vrrp_table.each do |row|
       row_data = row['ROW_vrrp_group']
       group_name = row_data['sh_if_index']
