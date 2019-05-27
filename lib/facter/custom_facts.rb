@@ -42,7 +42,7 @@ class Facter::CiscoNexus::CustomFacts
         end
     end
 
-  facts['interfaces'] = interfaces
-  facts['hsrp'] = hsrp_groups
-  
+    facts['interfaces'] = interfaces
+    facts['hsrp'] = hsrp_groups
+  end
 end
