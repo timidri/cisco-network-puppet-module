@@ -8,6 +8,7 @@ class Facter::CiscoNexus::CustomFacts
   def self.add_custom_facts(facts)
     # facts['my_custom_fact'] = 'my_custom_value'
 
+    # interfaces
     interfaces = {}
     Cisco::Interface.interfaces.each do |interface_name, nu_obj|
       # Some interfaces cannot or should not be managed by this type.
@@ -22,6 +23,7 @@ class Facter::CiscoNexus::CustomFacts
       interfaces[interface_name] = state
     end
 
+    # hsrp groups
     hsrp_groups = {}
     Cisco::InterfaceHsrpGroup.groups.each do |interface, groups|
       groups.each do |group, iptypes|
@@ -37,6 +39,19 @@ class Facter::CiscoNexus::CustomFacts
       end
     end
 
+    # vrrp info
+    Cisco::Environment.add_env('default',
+      host:        config['address'],
+      port:        config['port'],
+      transport:   config['transport'],
+      verify_mode: config['verify_mode'],
+      username:    config['username'],
+      password:    config['password'],
+     )
+
+    client = Cisco::Client.create()
+    puts client.get(command: 'show vrrp')
+    # set the facts
     facts['interfaces'] = interfaces
     facts['hsrp'] = hsrp_groups
   end
