@@ -24,24 +24,23 @@ class Facter::CiscoNexus::CustomFacts
       end
     end
     facts['interfaces'] = interfaces
-  end
 
-  hsrp_groups = {}
-  Cisco::InterfaceHsrpGroup.groups.each do |interface, groups|
-    hsrp_groups[interface] = {}
-    groups.each do |group, iptypes|
-      hsrp_groups[interface][group] = {}
-      iptypes.each do |iptype, nu_obj|
-      begin
-        state = {}
-        # Call node_utils getter for each property
-        HSRP_PROPS.each do |prop|
-          state[prop] = nu_obj.send(prop)
+    hsrp_groups = {}
+    Cisco::InterfaceHsrpGroup.groups.each do |interface, groups|
+      hsrp_groups[interface] = {}
+      groups.each do |group, iptypes|
+        hsrp_groups[interface][group] = {}
+        iptypes.each do |iptype, nu_obj|
+        begin
+          state = {}
+          # Call node_utils getter for each property
+          HSRP_PROPS.each do |prop|
+            state[prop] = nu_obj.send(prop)
+          end
+
+          hsrp_groups[interface][group][iptype] = state
         end
-
-        hsrp_groups[interface][group][iptype] = state
-      end
-  end
+    end
 
   facts['interfaces'] = interfaces
   facts['hsrp'] = hsrp_groups
