@@ -40,15 +40,6 @@ class Facter::CiscoNexus::CustomFacts
     end
 
     # vrrp info
-    Cisco::Environment.add_env('default',
-      host:        config['address'],
-      port:        config['port'],
-      transport:   config['transport'],
-      verify_mode: config['verify_mode'],
-      username:    config['username'],
-      password:    config['password'],
-     )
-
     client = Cisco::Client.create()
     puts client.get(command: 'show vrrp')
     # set the facts
