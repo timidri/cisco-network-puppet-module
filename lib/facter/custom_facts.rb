@@ -24,9 +24,7 @@ class Facter::CiscoNexus::CustomFacts
 
     hsrp_groups = {}
     Cisco::InterfaceHsrpGroup.groups.each do |interface, groups|
-      hsrp_groups[interface] = {}
       groups.each do |group, iptypes|
-        hsrp_groups[interface][group] = {}
         iptypes.each do |iptype, nu_obj|
           state = {}
           # Call node_utils getter for each property
@@ -34,7 +32,7 @@ class Facter::CiscoNexus::CustomFacts
             state[prop] = nu_obj.send(prop)
           end
 
-          hsrp_groups[interface][group][iptype] = state
+          hsrp_groups["#{interface} #{group} #{iptype}"] = state
         end
       end
     end
