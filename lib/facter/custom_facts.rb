@@ -10,20 +10,17 @@ class Facter::CiscoNexus::CustomFacts
 
     interfaces = {}
     Cisco::Interface.interfaces.each do |interface_name, nu_obj|
-      begin
-        # Some interfaces cannot or should not be managed by this type.
-        # - NVE Interfaces (managed by cisco_vxlan_vtep type)
-        next if interface_name =~ /nve/i
-        state = {}
-        # Call node_utils getter for each property
-        PROPS.each do |prop|
-          state[prop] = nu_obj.send(prop)
-        end
-
-        interfaces[interface_name] = state
+      # Some interfaces cannot or should not be managed by this type.
+      # - NVE Interfaces (managed by cisco_vxlan_vtep type)
+      next if interface_name =~ /nve/i
+      state = {}
+      # Call node_utils getter for each property
+      PROPS.each do |prop|
+        state[prop] = nu_obj.send(prop)
       end
+
+      interfaces[interface_name] = state
     end
-    facts['interfaces'] = interfaces
 
     hsrp_groups = {}
     Cisco::InterfaceHsrpGroup.groups.each do |interface, groups|
@@ -31,7 +28,6 @@ class Facter::CiscoNexus::CustomFacts
       groups.each do |group, iptypes|
         hsrp_groups[interface][group] = {}
         iptypes.each do |iptype, nu_obj|
-        begin
           state = {}
           # Call node_utils getter for each property
           HSRP_PROPS.each do |prop|
@@ -40,6 +36,7 @@ class Facter::CiscoNexus::CustomFacts
 
           hsrp_groups[interface][group][iptype] = state
         end
+      end
     end
 
     facts['interfaces'] = interfaces
