@@ -1,5 +1,6 @@
 require 'cisco_node_utils'
 
+# Proof of Concept custom fact implementation
 class Facter::CiscoNexus::CustomFacts
   INTERFACE_PROPS = [:mtu, :speed, :duplex, :encapsulation_dot1q, :description, :ipv4_address]
   HSRP_PROPS = [:ipv4_vip, :preempt, :priority]
