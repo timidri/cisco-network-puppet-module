@@ -1,9 +1,8 @@
 require 'cisco_node_utils'
 
 class Facter::CiscoNexus::CustomFacts
-  PROPS = [:mtu, :speed, :duplex]
+  INTERFACE_PROPS = [:mtu, :speed, :duplex]
   HSRP_PROPS = [:ipv4_vip, :preempt, :priority]
-
 
   def self.add_custom_facts(facts)
     # facts['my_custom_fact'] = 'my_custom_value'
@@ -16,7 +15,7 @@ class Facter::CiscoNexus::CustomFacts
       next if interface_name =~ /nve/i
       state = {}
       # Call node_utils getter for each property
-      PROPS.each do |prop|
+      INTERFACE_PROPS.each do |prop|
         state[prop] = nu_obj.send(prop)
       end
 
@@ -40,21 +39,34 @@ class Facter::CiscoNexus::CustomFacts
     end
 
     # vrrp info
-    client = Cisco::Client.create()
-    vrrp_data = client.get(command: 'show vrrp', data_format: :nxapi_structured)
+    # trying to support both vrrp and vrrpv3
     vrrp_fact = {}
-    vrrp_table = vrrp_data['TABLE_vrrp_group']
-    if vrrp_table.respond_to?(:to_hash) # it's a Hash, not an Array
-      vrrp_table=[vrrp_table] # we convert to Array to simplify code
-    end
-    vrrp_table.each do |row|
-      row_data = row['ROW_vrrp_group']
-      group_name = row_data['sh_if_index']
-      vrrp_fact[group_name] = {}
-      row_data.each do |key, value|
-        next if key == 'sh_if_index' # we don't need the name in the properties
-        vrrp_fact[group_name][key.sub('sh_','')] = value # remove the 'sh_' prefix
+    client = Cisco::Client.create
+    begin
+      require 'pry'; binding.pry
+      vrrp_data = client.get(command: 'show vrrp', data_format: :nxapi_structured)
+      vrrp_table = vrrp_data['TABLE_vrrp_group'] || vrrp_data['TABLE_grp']
+      if vrrp_table.respond_to?(:to_hash) # it's a Hash, not an Array
+        vrrp_table = [vrrp_table] # we convert to Array to simplify code
       end
+      vrrp_table.each do |row_group|
+        row_data = row_group['ROW_vrrp_group'] || row_group['ROW_grp']
+        if row_data.respond_to?(:to_hash) # it's a Hash, not an Array
+          row_data = [row_data] # we convert to Array to simplify code
+        end
+        row_data.each do |interface_group|
+          interface = interface_group['sh_if_index'] || interface_group['intf']
+          group = interface_group['sh_group_id'] || interface_group['id']
+          vrrp_fact["#{interface} #{group}"] = {}
+          interface_group.each do |key, value|
+            # we don't need these keys in the properties
+            next if ['sh_if_index', 'intf', 'sh_group_id', 'id'].include? key
+            vrrp_fact["#{interface} #{group}"][key.sub('sh_', '')] = value # remove the 'sh_' prefix
+          end
+        end
+      end
+    rescue
+      # do nothing
     end
     # set the facts
     facts['interfaces'] = interfaces
