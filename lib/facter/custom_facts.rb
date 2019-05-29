@@ -15,7 +15,7 @@ class Facter::CiscoNexus::CustomFacts
       next if interface_name =~ /nve/i
       state = {}
       # Call node_utils getter for each property
-      PROPS.each do |prop|
+      INTERFACE_PROPS.each do |prop|
         state[prop] = nu_obj.send(prop)
       end
 
