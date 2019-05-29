@@ -39,7 +39,7 @@ class Facter::CiscoNexus::CustomFacts
       end
     end
 
-    # vrrp info
+    # vrrp info, using command API since there is no supported vrrp resource
     # trying to support both vrrp and vrrpv3
     vrrp_fact = {}
     client = Cisco::Client.create
