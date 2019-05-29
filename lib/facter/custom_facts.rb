@@ -1,7 +1,7 @@
 require 'cisco_node_utils'
 
 class Facter::CiscoNexus::CustomFacts
-  INTERFACE_PROPS = [:mtu, :speed, :duplex]
+  INTERFACE_PROPS = [:mtu, :speed, :duplex, :encapsulation_dot1q, :description, :ipv4_address]
   HSRP_PROPS = [:ipv4_vip, :preempt, :priority]
 
   def self.add_custom_facts(facts)
