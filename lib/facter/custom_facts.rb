@@ -43,7 +43,7 @@ class Facter::CiscoNexus::CustomFacts
     vrrp_fact = {}
     client = Cisco::Client.create
     begin
-      require 'pry'; binding.pry
+      # require 'pry'; binding.pry
       vrrp_data = client.get(command: 'show vrrp', data_format: :nxapi_structured)
       vrrp_table = vrrp_data['TABLE_vrrp_group'] || vrrp_data['TABLE_grp']
       if vrrp_table.respond_to?(:to_hash) # it's a Hash, not an Array
