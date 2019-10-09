@@ -15,30 +15,10 @@ class Facter::CiscoNexus::CustomFacts
 
   CLIENT = Cisco::Client.create
 
-  # hsrp groups
-  def self.hsrp_groups_fact
-    hsrp_props = [:ipv4_vip, :preempt, :priority]
-    hsrp_groups = {}
-    Cisco::InterfaceHsrpGroup.groups.each do |interface, groups|
-      groups.each do |group, iptypes|
-        iptypes.each do |iptype, nu_obj|
-          state = {}
-          # Call node_utils getter for each property
-          hsrp_props.each do |prop|
-            state[prop] = nu_obj.send(prop)
-          end
-
-          hsrp_groups["#{interface} #{group} #{iptype}"] = state
-        end
-      end
-    end
-    hsrp_groups
-  end
-
   # vrrp info, using command API since there is no supported vrrp resource
   # trying to support both vrrp and vrrpv3
   def self.vrrp_fact
-    vrrp = {}
+    vrrp = []
     begin
       # require 'pry'; binding.pry
       vrrp_data = CLIENT.get(command: 'show vrrp', data_format: :nxapi_structured)
@@ -54,12 +34,15 @@ class Facter::CiscoNexus::CustomFacts
         row_data.each do |interface_group|
           interface = interface_group['sh_if_index'] || interface_group['intf']
           group = interface_group['sh_group_id'] || interface_group['id']
-          vrrp["#{interface} #{group}"] = {}
+          vrrp_entry = {}
+          vrrp_entry['interface'] = interface
+          vrrp_entry['group'] = group
           interface_group.each do |key, value|
             # we don't need these keys in the properties
             next if ['sh_if_index', 'intf', 'sh_group_id', 'id'].include? key
-            vrrp["#{interface} #{group}"][key.sub('sh_', '')] = value # remove the 'sh_' prefix
+            vrrp_entry[key.sub('sh_', '')] = value # remove the 'sh_' prefix
           end
+          vrrp << vrrp_entry
         end
       end
     rescue
@@ -101,9 +84,8 @@ class Facter::CiscoNexus::CustomFacts
 
     # facts depending on enabled features
     if Cisco::Feature::hsrp_enabled?
-      facts['hsrp'] = hsrp_groups_fact
       hsrp_props = [:interface, :group, :iptype, :ipv4_vip, :preempt, :priority]
-      facts['hsrp_resource'] = query_resources('cisco_interface_hsrp_group', hsrp_props)
+      facts['hsrp'] = query_resources('cisco_interface_hsrp_group', hsrp_props)
     end
     # querying for vrrp feature is not available
     # if Cisco::NodeUtil::config_get('feature', 'vrrp')
