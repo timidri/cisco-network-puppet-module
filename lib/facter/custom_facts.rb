@@ -61,6 +61,38 @@ class Facter::CiscoNexus::CustomFacts
     CLIENT.munge_to_array(CLIENT.get(command: 'show ip ospf neighbors', data_format: :cli))
   end
 
+  def ospf_neighbors_fact
+    text = CLIENT.get(command: 'show ip ospf neighbors', data_format: :cli)
+    lines = text.split("\n")
+    line0_fields = lines[0].split
+    pid = line0_fields[3]
+    vrf = line0_fields[5]
+    fact = {
+      process_id: pid, 
+      vrf: vrf,
+    }
+    
+    neighbors = []
+    lines[3..-1].each do |line|
+      # The following line splits the string according to the supplied pattern.
+      # We make sure to remove leading and trailing spaces for each element
+      # An array element is created for every match. 
+      # See https://www.rubydoc.info/stdlib/core/String:unpack
+      neighbor_arr = line.unpack('A16A4A8A15A16A10').map{|s| s.strip}
+      neighbor = {
+        id: neighbor_arr[0],
+        priority: neighbor_arr[1],
+        state: neighbor_arr[2],
+        uptime: neighbor_arr[3],
+        address: neighbor_arr[4],
+        interface: neighbor_arr[5]
+      }
+      neighbors << neighbor
+    end
+    fact['neighbors'] = neighbors
+    fact
+  end
+
   # query existing Puppet resources and output a hash
   # filter for keys we don't want to see
   def self.query_resources(type, include_attrs=[])
@@ -71,6 +103,7 @@ class Facter::CiscoNexus::CustomFacts
       end 
     end
   end
+
 
   # adding the custom facts to the global facts hash
   def self.add_custom_facts(facts)
