@@ -57,12 +57,13 @@ class Facter::CiscoNexus::CustomFacts
   end
 
   # listing ospf neighbors
-  def self.ospf_neighbors_fact
-    CLIENT.munge_to_array(CLIENT.get(command: 'show ip ospf neighbors', data_format: :cli))
-  end
+  # def self.ospf_neighbors_fact
+  #   CLIENT.munge_to_array(CLIENT.get(command: 'show ip ospf neighbors', data_format: :cli))
+  # end
 
-  def ospf_neighbors_fact
+  def self.ospf_neighbors_fact
     text = CLIENT.get(command: 'show ip ospf neighbors', data_format: :cli)
+    return {} unless text # no neighbors
     lines = text.split("\n")
     line0_fields = lines[0].split
     pid = line0_fields[3]
