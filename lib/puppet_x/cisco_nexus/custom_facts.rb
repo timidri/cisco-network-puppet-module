@@ -12,7 +12,6 @@ end
 
 # Proof of Concept custom fact implementation
 class Facter::CiscoNexus::CustomFacts
-
   CLIENT = Cisco::Client.create
 
   # vrrp info, using command API since there is no supported vrrp resource
@@ -69,23 +68,23 @@ class Facter::CiscoNexus::CustomFacts
     pid = line0_fields[3]
     vrf = line0_fields[5]
     fact = {
-      process_id: pid, 
-      vrf: vrf,
+      process_id: pid,
+      vrf:        vrf,
     }
-    
+
     neighbors = []
     lines[3..-1].each do |line|
       # The following line splits the string according to the supplied pattern.
       # We make sure to remove leading and trailing spaces for each element
-      # An array element is created for every match. 
+      # An array element is created for every match.
       # See https://www.rubydoc.info/stdlib/core/String:unpack
-      neighbor_arr = line.unpack('A16A4A8A15A16A10').map{|s| s.strip}
+      neighbor_arr = line.unpack('A16A4A8A15A16A10').map { |s| s.strip }
       neighbor = {
-        id: neighbor_arr[0],
-        priority: neighbor_arr[1],
-        state: neighbor_arr[2],
-        uptime: neighbor_arr[3],
-        address: neighbor_arr[4],
+        id:        neighbor_arr[0],
+        priority:  neighbor_arr[1],
+        state:     neighbor_arr[2],
+        uptime:    neighbor_arr[3],
+        address:   neighbor_arr[4],
         interface: neighbor_arr[5]
       }
       neighbors << neighbor
@@ -97,18 +96,16 @@ class Facter::CiscoNexus::CustomFacts
   # query existing Puppet resources and output a hash
   # filter for keys we don't want to see
   def self.query_resources(type, include_attrs=[])
-    Puppet::Resource.indirection.search(type, {} ).map do | resource |
+    Puppet::Resource.indirection.search(type, {}).map do |resource|
       resource.to_hash.reject do |key|
-        !(include_attrs.empty?) && !(include_attrs.include? key) || 
+        !include_attrs.empty? && !(include_attrs.include? key) ||
         ([:ensure, :loglevel, :provider].include? key)
-      end 
+      end
     end
   end
 
-
   # adding the custom facts to the global facts hash
   def self.add_custom_facts(facts)
-
     facts['active_features'] = active_features_fact
 
     interface_props = [:interface, :mtu, :speed, :duplex, :encapsulation_dot1q, :description, :ipv4_address]
@@ -117,24 +114,24 @@ class Facter::CiscoNexus::CustomFacts
     facts['snmp_users'] = query_resources('snmp_user')
 
     # facts depending on enabled features
-    if Cisco::Feature::hsrp_enabled?
+    if Cisco::Feature.hsrp_enabled?
       hsrp_props = [:interface, :group, :iptype, :ipv4_vip, :preempt, :priority]
       facts['hsrp'] = query_resources('cisco_interface_hsrp_group', hsrp_props)
     end
     # querying for vrrp feature is not available
     # if Cisco::NodeUtil::config_get('feature', 'vrrp')
-      facts['vrrp'] = vrrp_fact
+    facts['vrrp'] = vrrp_fact
     # end
-    if Cisco::Feature::vtp_enabled?
+    if Cisco::Feature.vtp_enabled?
       facts['vtp'] = query_resources('cisco_vtp')
     end
-    if Cisco::Feature::tacacs_enabled?
+    if Cisco::Feature.tacacs_enabled?
       facts['tacacs_server'] = query_resources('cisco_tacacs_server')
     end
-    if Cisco::Feature::bgp_enabled?
+    if Cisco::Feature.bgp_enabled?
       facts['bgp_neighbor'] = query_resources('cisco_bgp_neighbor')
     end
-    if Cisco::Feature::ospf_enabled?
+    if Cisco::Feature.ospf_enabled?
       facts['ospf_neighbors'] = ospf_neighbors_fact
     end
   end
