@@ -36,7 +36,7 @@ module Puppet::Transport
 
     def parse_device_facts
       require 'facter/cisco_nexus'
-      require 'facter/custom_facts'
+      require 'puppet_x/cisco_nexus/custom_facts'
       facts = {}
 
       facts['operatingsystem'] = 'nexus'
